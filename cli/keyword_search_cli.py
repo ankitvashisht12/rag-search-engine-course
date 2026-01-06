@@ -19,7 +19,7 @@ def main() -> None:
             searched_query = args.query
 
             movies_data = load_movies_data()
-            search_results = keyword_movie_search_titles(searched_query, movies_data)[:5]
+            search_results = keyword_movie_search_titles(searched_query, movies_data, True)[:5]
 
             print(f"Searching for: {searched_query}")
             for movie in search_results:
