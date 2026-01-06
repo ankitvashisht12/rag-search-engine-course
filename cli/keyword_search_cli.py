@@ -22,6 +22,7 @@ def main() -> None:
             search_results = keyword_movie_search_titles(searched_query, movies_data, True)[:5]
 
             print(f"Searching for: {searched_query}")
+            # print("Result:", search_results)
             for movie in search_results:
                 print(f"{movie['id']}. {movie['title']}")
 
