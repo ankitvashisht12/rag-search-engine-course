@@ -1,4 +1,5 @@
 from .remove_punctuation import remove_punctuation
+from .matching_query_and_title import matching_query_and_title
 
 def keyword_movie_search_titles(searched_query: str, movies_data: dict, case_insensitive=False, should_remove_punctuation=True) -> list[dict]:
 
@@ -20,7 +21,9 @@ def keyword_movie_search_titles(searched_query: str, movies_data: dict, case_ins
             searched_query = remove_punctuation(searched_query)
             movie_title = remove_punctuation(movie_title)
 
-        if searched_query in movie_title:
+        # if searched_query in movie_title:
+        #     results.append(movie)
+        if matching_query_and_title(searched_query, movie_title):
             results.append(movie)
 
     return results
