@@ -5,7 +5,10 @@ import argparse
 from utils.load_movies_data import load_movies_data
 from utils.return_keyword_search_results import keyword_movie_search_titles
 from utils.query_tokenizer import query_tokenizer
+from utils.clean_query_and_return_tokens import clean_query_and_return_tokens
 from tf_idf.inverted_index import InvertedIndex
+
+import math
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
@@ -19,6 +22,9 @@ def main() -> None:
     tf_parser = subparsers.add_parser("tf", help="Calculate the TF for a given term and document")
     tf_parser.add_argument("doc_id", type=int, help="Document ID to calculate TF for")
     tf_parser.add_argument("term", type=str, help="Term to calculate TF for")
+
+    idf_parser = subparsers.add_parser("idf", help="Calculate the IDF for a given term")
+    idf_parser.add_argument("term", type=str, help="Term to calculate IDF for")
 
     args = parser.parse_args()
 
@@ -72,6 +78,25 @@ def main() -> None:
             inverted_index.load()
             tf = inverted_index.get_tf(doc_id, term)
             print(tf)
+
+        case "idf":
+            inverted_index.load()
+
+            total_document_count = len(inverted_index.docmap)
+
+            tokens = clean_query_and_return_tokens(args.term)
+
+            if len(tokens) > 1:
+                raise Exception("IDF can only be calculated for a single term")
+
+            doc_ids = inverted_index.get_documents(tokens[0])
+            term_match_doc_count = len(list(set(doc_ids))) 
+
+
+            idf_value = math.log((total_document_count + 1) / (term_match_doc_count + 1))
+
+            print(f"Inverse document frequency of '{args.term}': {idf_value:.2f}")
+
 
         case _:
             parser.print_help()
