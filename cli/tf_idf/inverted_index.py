@@ -1,3 +1,4 @@
+from collections import Counter
 import pickle 
 from pathlib import Path
 import os
@@ -9,14 +10,16 @@ BASE_PATH = Path(__file__).resolve().parents[2]
 CACHE_DIR = BASE_PATH / "cache"
 INDEX_CACHE_PATH = os.path.join(CACHE_DIR, "index.pkl")
 DOC_MAP_CACHE_PATH = os.path.join(CACHE_DIR, "docmap.pkl")
-
+TERM_FREQUENCIES_CACHE_PATH = os.path.join(CACHE_DIR, "term_frequencies.pkl")
 class InvertedIndex:
     index: dict[str, list[int]]
     docmap: dict[int, dict[str, str]]
+    term_frequencies: dict[int, Counter] # { doc_id: counter dict of each term in that document }
 
     def __init__(self) -> None:
         self.index = {}
         self.docmap = {}
+        self.term_frequencies = {}
 
     def __add_document(self, doc_id: int, text: str) -> None:
         tokens = clean_query_and_return_tokens(text)
@@ -55,6 +58,8 @@ class InvertedIndex:
                 self.index = pickle.load(file)
             with open(DOC_MAP_CACHE_PATH, 'rb') as file:
                 self.docmap = pickle.load(file)
+            with open(TERM_FREQUENCIES_CACHE_PATH, 'rb') as file:
+                self.term_frequencies = pickle.load(file)
         except FileNotFoundError:
             print("Error: Files don't exist")
 
@@ -69,3 +74,6 @@ class InvertedIndex:
 
         with open(DOC_MAP_CACHE_PATH, 'wb') as file:
             pickle.dump(self.docmap, file)
+        
+        with open(TERM_FREQUENCIES_CACHE_PATH, 'wb') as file:
+            pickle.dump(self.term_frequencies, file)
