@@ -29,6 +29,12 @@ class InvertedIndex:
                 self.index[token] = []
             self.index[token].append(doc_id)
 
+            # building term frequencies
+            if doc_id not in self.term_frequencies:
+                self.term_frequencies[doc_id] = Counter()
+
+            self.term_frequencies[doc_id][token] += 1
+
     def get_documents(self, term: str) -> list[int]:
         if term.lower() not in self.index:
             return []
