@@ -3,24 +3,32 @@ from pathlib import Path
 import os
 from utils.query_tokenizer import query_tokenizer
 from utils.load_movies_data import load_movies_data
+from utils.clean_query_and_return_tokens import clean_query_and_return_tokens
+
+BASE_PATH = Path(__file__).resolve().parents[2]
+CACHE_DIR = BASE_PATH / "cache"
+INDEX_CACHE_PATH = os.path.join(CACHE_DIR, "index.pkl")
+DOC_MAP_CACHE_PATH = os.path.join(CACHE_DIR, "docmap.pkl")
 
 class InvertedIndex:
     index: dict[str, list[int]]
-    docmap: dict[int, str]
+    docmap: dict[int, dict[str, str]]
 
     def __init__(self) -> None:
         self.index = {}
         self.docmap = {}
 
     def __add_document(self, doc_id: int, text: str) -> None:
-        tokens = query_tokenizer(text)
+        tokens = clean_query_and_return_tokens(text)
 
         for token in tokens:
-            if token.lower() not in self.index:
-                self.index[token.lower()] = []
-            self.index[token.lower()].append(doc_id)
+            if token not in self.index:
+                self.index[token] = []
+            self.index[token].append(doc_id)
 
     def get_documents(self, term: str) -> list[int]:
+        if term.lower() not in self.index:
+            return []
         doc_ids = sorted(self.index[term.lower()])
         return doc_ids
 
@@ -33,15 +41,26 @@ class InvertedIndex:
 
         for movie in movies:
             text = f"{movie['title']} {movie['description']}"
+
+            # building index
             self.__add_document(movie['id'], text)
 
+            # building docmap
+            self.docmap[movie['id']] = movie
 
+
+    def load(self) -> None:
+        try:
+            with open(INDEX_CACHE_PATH, 'rb') as file:
+                self.index = pickle.load(file)
+            with open(DOC_MAP_CACHE_PATH, 'rb') as file:
+                self.docmap = pickle.load(file)
+        except FileNotFoundError:
+            print("Error: Files don't exist")
+
+    
 
     def save(self) -> None:
-        BASE_PATH = Path(__file__).resolve().parents[2]
-        CACHE_DIR = BASE_PATH / "cache"
-        INDEX_CACHE_PATH = os.path.join(CACHE_DIR, "index.pkl")
-        DOC_MAP_CACHE_PATH = os.path.join(CACHE_DIR, "docmap.pkl")
 
         os.makedirs(CACHE_DIR, exist_ok=True)
 
