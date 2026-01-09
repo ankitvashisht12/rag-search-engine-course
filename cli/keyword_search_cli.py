@@ -15,6 +15,10 @@ def main() -> None:
     search_parser.add_argument("query", type=str, help="Search query")
 
     build_parser = subparsers.add_parser("build", help="Build the inverted index and save it to disk")
+    
+    tf_parser = subparsers.add_parser("tf", help="Calculate the TF for a given term and document")
+    tf_parser.add_argument("doc_id", type=int, help="Document ID to calculate TF for")
+    tf_parser.add_argument("term", type=str, help="Term to calculate TF for")
 
     args = parser.parse_args()
 
@@ -60,6 +64,14 @@ def main() -> None:
 
             inverted_index.save()
 
+
+        case "tf":
+            doc_id = args.doc_id
+            term = args.term
+
+            inverted_index.load()
+            tf = inverted_index.get_tf(doc_id, term)
+            print(tf)
 
         case _:
             parser.print_help()
