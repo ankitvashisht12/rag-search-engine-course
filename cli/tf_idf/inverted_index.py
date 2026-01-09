@@ -41,6 +41,13 @@ class InvertedIndex:
         doc_ids = sorted(self.index[term.lower()])
         return doc_ids
 
+    def get_tf(self, doc_id: int, term: str) -> int:
+        tokens = clean_query_and_return_tokens(term)
+
+        if len(tokens) > 1:
+            raise Exception("TF can only be calculated for a single term")
+
+        return self.term_frequencies.get(doc_id, Counter()).get(tokens[0], 0)
 
 
     def build(self) -> None:
