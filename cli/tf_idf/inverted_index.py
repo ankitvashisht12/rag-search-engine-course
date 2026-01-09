@@ -1,3 +1,4 @@
+import math
 from collections import Counter
 import pickle 
 from pathlib import Path
@@ -48,6 +49,19 @@ class InvertedIndex:
             raise Exception("TF can only be calculated for a single term")
 
         return self.term_frequencies.get(doc_id, Counter()).get(tokens[0], 0)
+
+    def get_idf(self, term: str) -> float:
+        total_document_count = len(self.docmap)
+
+        tokens = clean_query_and_return_tokens(term)
+
+        if len(tokens) > 1:
+            raise Exception("IDF can only be calculated for a single term")
+
+        doc_ids = self.get_documents(tokens[0])
+        term_match_doc_count = len(list(set(doc_ids))) 
+
+        return math.log((total_document_count + 1) / (term_match_doc_count + 1))
 
 
     def build(self) -> None:
